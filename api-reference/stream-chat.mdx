@@ -1,7 +1,7 @@
 ---
-title: "stream_chat() — Stream Token-by-Token Responses"
+title: "stream_chat() — Stream Model Responses Token by Token"
 sidebarTitle: "stream_chat()"
-description: "OllamaFreeAPI.stream_chat() yields response chunks as they are generated, enabling real-time output for interactive applications."
+description: "OllamaFreeAPI.stream_chat() yields string chunks as the model generates them, enabling real-time output for interactive applications."
 ---
 
 `stream_chat()` works like `chat()` but instead of waiting for the full response before returning, it yields string chunks incrementally as the model produces them. This is ideal for chat interfaces, CLI tools, or any scenario where displaying output in real time improves user experience. The same server selection and failover logic used by `chat()` applies here.
@@ -44,6 +44,14 @@ client.stream_chat(prompt: str, model: Optional[str] = None, **kwargs)  # Genera
 
 <ParamField path="seed" type="int">
   Random seed for reproducible outputs across runs on the same server.
+</ParamField>
+
+<ParamField path="tfs_z" type="float">
+  Tail-free sampling parameter. Reduces the impact of low-probability tokens on the output distribution. Only included in the request if explicitly passed.
+</ParamField>
+
+<ParamField path="mirostat" type="int">
+  Mirostat sampling mode. Accepted values are `0` (disabled), `1` (Mirostat), or `2` (Mirostat 2.0). Only included in the request if explicitly passed.
 </ParamField>
 
 <ParamField path="timeout" type="float" default="30.0">

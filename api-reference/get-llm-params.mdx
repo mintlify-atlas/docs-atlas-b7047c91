@@ -1,7 +1,7 @@
 ---
 title: "get_llm_params() — Get Parameters for LangChain Integration"
 sidebarTitle: "get_llm_params()"
-description: "get_llm_params() returns the model name and best server URL for use with OllamaLLM in LangChain and LlamaIndex integrations."
+description: "get_llm_params() returns the model name and best-performing server URL as a dict for use with OllamaLLM in LangChain and LlamaIndex."
 ---
 
 `get_llm_params()` performs server selection and returns a dictionary containing the two values needed to instantiate an `OllamaLLM` object in LangChain or LlamaIndex: the `model` name and the `base_url` of the best available server. This removes the need to hardcode a server URL in your integration code — the client picks the highest-performing server at call time, so your integration automatically benefits from the current server landscape.

@@ -1,7 +1,7 @@
 ---
-title: "chat() — Send a Prompt and Get a Text Response"
+title: "chat() — Send a Prompt and Receive a Full Response"
 sidebarTitle: "chat()"
-description: "OllamaFreeAPI.chat() sends a prompt to a community-hosted Ollama server and returns the full response as a string."
+description: "OllamaFreeAPI.chat() sends a prompt to a community-hosted Ollama server and returns the complete generated response as a plain string."
 ---
 
 `chat()` is the primary method for single-turn interactions. It selects the fastest available server for the requested model, sends the prompt, waits for the complete response, and returns it as a plain string. Failover to the next-best server is handled automatically if the first attempt fails.
@@ -44,6 +44,14 @@ client.chat(prompt: str, model: Optional[str] = None, **kwargs) -> str
 
 <ParamField path="seed" type="int">
   Random seed for reproducible outputs. When set, the same prompt and seed will produce identical results on the same server.
+</ParamField>
+
+<ParamField path="tfs_z" type="float">
+  Tail-free sampling parameter. Reduces the impact of low-probability tokens on the output distribution. Only included in the request if explicitly passed.
+</ParamField>
+
+<ParamField path="mirostat" type="int">
+  Mirostat sampling mode. Accepted values are `0` (disabled), `1` (Mirostat), or `2` (Mirostat 2.0). Only included in the request if explicitly passed.
 </ParamField>
 
 <ParamField path="timeout" type="float" default="30.0">

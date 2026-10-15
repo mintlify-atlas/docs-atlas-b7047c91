@@ -1,7 +1,7 @@
 ---
 title: "get_server_info() — Inspect a Specific Hosting Node"
 sidebarTitle: "get_server_info()"
-description: "get_server_info() returns metadata for one server hosting a model—location, organization, and performance data. Returns the top-ranked server if no URL is specified."
+description: "get_server_info() returns metadata for one server hosting a given model, including location, organization, and performance scores."
 ---
 
 `get_server_info()` retrieves the metadata record for a single server that hosts a given model. When called without a `server_url`, it returns the first available server for the model (equivalent to index `0` of the list returned by `get_model_servers()`). When a `server_url` is provided, it looks up and returns the record for that specific node. This is useful for verifying connectivity details, checking the geographic location of a server, or reviewing performance data for a specific host before routing traffic to it.

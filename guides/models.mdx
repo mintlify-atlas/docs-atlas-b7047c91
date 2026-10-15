@@ -1,10 +1,10 @@
 ---
-title: "Browse Available Models and Families"
+title: "Explore OllamaFreeAPI Models, Families, and Metadata"
 sidebarTitle: "Models"
 description: "Discover all active models in OllamaFreeAPI across the LLaMA, Gemma, and Qwen families. Learn how to list, inspect, and select models programmatically."
 ---
 
-OllamaFreeAPI provides access to a community-sourced catalog of open-source models spanning three architecture families — **llama**, **gemma**, and **qwen** — with more than 10 active model entries regularly validated against live servers. Each model is served by one or more community-hosted Ollama instances; the client automatically routes requests to the fastest available server at call time.
+OllamaFreeAPI provides access to a community-sourced catalog of open-source models spanning three architecture families — **llama**, **gemma**, and **qwen** — with nine active model entries regularly validated against live servers. Each model is served by one or more community-hosted Ollama instances; the client automatically routes requests to the fastest available server at call time.
 
 <Note>
   Model availability depends entirely on community servers. A model appearing in the catalog does not guarantee its server is currently online. Always call `list_models()` at runtime to get the live catalog, and handle `RuntimeError` in case a model's servers are temporarily unreachable.

@@ -1,7 +1,7 @@
 ---
 title: "OllamaFreeAPI: Free Distributed LLM Access for Python"
 sidebarTitle: "Introduction"
-description: "OllamaFreeAPI is a Python SDK that provides free, zero-config access to LLaMA, Mistral, DeepSeek, Qwen, and Gemma models via community-hosted Ollama servers."
+description: "OllamaFreeAPI is a Python SDK for free, zero-config access to LLaMA, Mistral, DeepSeek, Qwen, and Gemma models via community-hosted Ollama servers."
 ---
 
 OllamaFreeAPI is a Python SDK that gives every developer free, instant access to the world's leading open-source large language models — no API key, no credit card, no quota. It routes your requests through a network of community-hosted Ollama servers, automatically selecting the fastest available node and failing over to a backup if anything goes wrong. Whether you are prototyping a chatbot, running experiments, or building a production application on a tight budget, OllamaFreeAPI removes every barrier between you and state-of-the-art language models.
@@ -23,24 +23,22 @@ OllamaFreeAPI is backed by a distributed fleet of community-hosted Ollama server
 | Feature | Other Free Tiers | OllamaFreeAPI |
 |---|---|---|
 | Free access | ❌ Limited trials | ✅ Always free |
-| Model variety | 3–5 models | 16 active models across 5 families |
+| Model variety | 3–5 models | 9+ active models across 3 families |
 | Reliability | Highly variable | Validated endpoints, automatic failover |
 | Ease of use | Complex setup, API keys required | Zero-config, `pip install` and go |
 | Community support | Paid plans only | Free and active |
 
 ## Model Families
 
-OllamaFreeAPI ships with a curated catalog covering five model families, sourced from verified community nodes:
+OllamaFreeAPI ships with a curated catalog covering three active model families, sourced from verified community nodes:
 
-| Family | Status | Notes |
+| Family | Status | Notable Models |
 |---|---|---|
-| `llama` | ✅ Active | Meta's LLaMA family, including the efficient `llama3.2:3b` |
-| `gemma` | ✅ Active | Google's Gemma family, including the powerful `gpt-oss:20b` |
-| `qwen` | ✅ Active | Alibaba Cloud's Qwen family |
-| `mistral` | Available | High-performance Mistral baseline and Mistral-Nemo variants |
-| `deepseek` | Available | DeepSeek-R1 with strong reasoning capabilities |
+| `llama` | ✅ Active | `llama3.2:3b`, `llama3:latest`, `mistral:latest`, `mistral-nemo:custom` |
+| `gemma` | ✅ Active | `gpt-oss:20b` |
+| `qwen` | ✅ Active | `deepseek-r1:latest` |
 
-**Current catalog stats:** 16 active models · 3 active families · 6+ highly reliable server nodes
+**Current catalog stats:** 9+ active models · 3 active families · 6+ highly reliable server nodes
 
 ## Key Features
 
