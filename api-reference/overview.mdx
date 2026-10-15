@@ -1,0 +1,68 @@
+---
+title: "OllamaFreeAPI Client: Python SDK Reference"
+sidebarTitle: "Overview"
+description: "Complete reference for the OllamaFreeAPI Python client. Import the class, initialize it, and access all methods for chat, streaming, and model discovery."
+---
+
+The `OllamaFreeAPI` class is the single entry point for all interactions with community-hosted Ollama servers. It provides methods for sending prompts, streaming responses, discovering available models and families, inspecting server metadata, building raw request payloads, and obtaining integration parameters for frameworks like LangChain and LlamaIndex.
+
+## Import and Initialization
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+```
+
+<Note>
+  Initialization loads the model catalog from bundled JSON files included in the package. No network call is made at startup — the client is ready to use immediately after construction.
+</Note>
+
+## Methods
+
+<CardGroup cols={2}>
+  <Card title="chat()" icon="message" href="/api-reference/chat">
+    Send a prompt and receive the full response as a string.
+  </Card>
+  <Card title="stream_chat()" icon="bolt" href="/api-reference/stream-chat">
+    Stream response chunks token-by-token for real-time output.
+  </Card>
+  <Card title="list_models()" icon="list" href="/api-reference/list-models">
+    List all available model names, optionally filtered by family.
+  </Card>
+  <Card title="list_families()" icon="layer-group" href="/api-reference/list-models">
+    List all available model family names from the bundled catalog.
+  </Card>
+  <Card title="get_model_info()" icon="circle-info" href="/api-reference/get-model-info">
+    Retrieve full metadata for a specific model by name.
+  </Card>
+  <Card title="get_model_servers()" icon="server" href="/api-reference/get-model-servers">
+    List all community servers hosting a given model, with location and performance data.
+  </Card>
+  <Card title="get_server_info()" icon="magnifying-glass" href="/api-reference/get-server-info">
+    Inspect a specific hosting node by model and optional server URL.
+  </Card>
+  <Card title="generate_api_request()" icon="code" href="/api-reference/generate-api-request">
+    Build and return the JSON payload for an Ollama generate request.
+  </Card>
+  <Card title="get_llm_params()" icon="plug" href="/api-reference/get-llm-params">
+    Get the model name and best server URL for LangChain or LlamaIndex integration.
+  </Card>
+</CardGroup>
+
+## Class Constants
+
+| Constant | Value | Description |
+|---|---|---|
+| `DEFAULT_TIMEOUT` | `30.0` | Default request timeout in seconds, applied to `chat()` and `stream_chat()` unless overridden via the `timeout` kwarg. |
+
+## Server Selection
+
+`chat()` and `stream_chat()` automatically select the best available server for the given model using a performance-weighted algorithm:
+
+1. All servers hosting the requested model are retrieved from the bundled catalog.
+2. Servers are sorted in descending order by `tokens_per_second` from their `performance` metadata — the fastest server is tried first.
+3. If a request to the top-ranked server fails (network error, timeout, or unexpected response), the client automatically falls back to the next server in the sorted list.
+4. If every server is exhausted without a successful response, a `RuntimeError` is raised.
+
+This means callers never need to manage server selection manually — the client handles retries and failover transparently on every call.

@@ -1,0 +1,124 @@
+---
+title: "Run OllamaFreeAPI on Android with Termux"
+sidebarTitle: "Termux"
+description: "Install and use OllamaFreeAPI on a Samsung Galaxy (ARM64) via Termux from F-Droid, including the Hermes agent skill integration."
+---
+
+OllamaFreeAPI runs on Android through Termux, a Linux-like terminal environment, and has been tested on a Samsung Galaxy S25 (ARM64). Because all inference happens on community-hosted Ollama servers over the internet, **no local Ollama server is required** — your phone only needs Python, the OllamaFreeAPI package, and a network connection. The same `chat()` and `stream_chat()` API you use on a desktop works identically inside Termux.
+
+<Warning>
+  Every prompt you send is transmitted over the internet to community-hosted servers operated by volunteers. Do not send passwords, API keys, personal information, or confidential prompts.
+</Warning>
+
+## Installation
+
+<Steps>
+  <Step title="Install Termux from F-Droid">
+    Download and install **Termux from [F-Droid](https://f-droid.org/packages/com.termux/)**, then open it once so it can initialise its package environment.
+
+    <Note>
+      Do **not** install Termux from the Google Play Store. The Play Store build is outdated and no longer maintained. All Termux add-ons must come from the same source (F-Droid) as Termux itself.
+    </Note>
+  </Step>
+
+  <Step title="Install Git and Python">
+    In the Termux terminal, run:
+
+    ```bash
+    pkg update -y && pkg install -y git python
+    ```
+  </Step>
+
+  <Step title="Clone the repository">
+    ```bash
+    cd "$HOME"
+    git clone --depth 1 https://github.com/mfoud444/ollamafreeapi.git
+    ```
+
+    If you have cloned the repository previously, skip the `git clone` line. To update an existing clone, run `git pull` from inside the `ollamafreeapi` directory first.
+  </Step>
+
+  <Step title="Run the installer">
+    ```bash
+    cd ollamafreeapi
+    python scripts/install_ollamafreeapi_termux.py
+    ```
+
+    The installer:
+    1. Installs the OllamaFreeAPI Python package and all its dependencies via `pip`.
+    2. Prints the live model catalog discovered from community servers.
+    3. Writes the Hermes agent skill to `$HOME/.hermes/skills/ollamafreeapi/SKILL.md`.
+    4. Optionally lets you send a test prompt from the terminal.
+
+    If the `HERMES_HOME` environment variable is set, the skill is written to `$HERMES_HOME/skills/ollamafreeapi/SKILL.md` instead.
+  </Step>
+
+  <Step title="Verify the installation">
+    List the currently available models:
+
+    ```bash
+    python -c "from ollamafreeapi import OllamaFreeAPI; print(OllamaFreeAPI().list_models())"
+    ```
+
+    Send a chat prompt using an exact model name from that list:
+
+    ```bash
+    python -c "from ollamafreeapi import OllamaFreeAPI; print(OllamaFreeAPI().chat(prompt='Explain photosynthesis briefly.', model='llama3.2:3b'))"
+    ```
+
+    Stream a response token-by-token:
+
+    ```bash
+    python -c "from ollamafreeapi import OllamaFreeAPI; [print(part, end='', flush=True) for part in OllamaFreeAPI().stream_chat(prompt='Explain photosynthesis briefly.', model='llama3.2:3b')]"
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Dependency installation fails while building a Python package">
+    Some OllamaFreeAPI dependencies include native extensions that must be compiled on ARM64. Install the required compiler tools and re-run the installer:
+
+    ```bash
+    pkg install -y rust clang make pkg-config
+    python scripts/install_ollamafreeapi_termux.py
+    ```
+  </Accordion>
+  <Accordion title="Termux cannot find the git command">
+    Git is not installed by default. Install it with:
+
+    ```bash
+    pkg install git
+    ```
+
+    Then return to Step 3 and clone the repository.
+  </Accordion>
+  <Accordion title="The installer stops because ~/ollamafreeapi already exists">
+    The installer will not overwrite a directory that exists but is **not** a clone of this repository. Rename or move the conflicting directory and then re-run the `git clone` command:
+
+    ```bash
+    mv "$HOME/ollamafreeapi" "$HOME/ollamafreeapi.bak"
+    git clone --depth 1 https://github.com/mfoud444/ollamafreeapi.git "$HOME/ollamafreeapi"
+    ```
+  </Accordion>
+  <Accordion title="A model is listed but requests fail">
+    A model appearing in `list_models()` means it is in the catalog, not that its server is online right now. Community servers can go offline at any time. Try a different model from the list, or retry the same model later.
+  </Accordion>
+</AccordionGroup>
+
+## Hermes Agent Skill
+
+The installer writes an OllamaFreeAPI **skill** for the [Hermes](https://hermes-agent.nousresearch.com/) AI agent to:
+
+```
+$HOME/.hermes/skills/ollamafreeapi/SKILL.md
+```
+
+**Restart Hermes** after the installer finishes so the agent can load the new skill.
+
+The skill teaches Hermes how to call `list_models()` and `chat()` / `stream_chat()` through the Python package. It does **not** add these models to Hermes' normal model picker, and it does not change Hermes' inference provider. The OllamaFreeAPI client accepts a plain prompt string and does not provide Hermes tool-calling semantics or full conversation-history management.
+
+<Note>
+  Hermes' official Termux installation guide currently warns that its Termux package is broken. The OllamaFreeAPI installer does **not** install Hermes. Check the [official Hermes Termux guide](https://hermes-agent.nousresearch.com/docs/getting-started/termux) for current status before attempting a separate Hermes installation.
+</Note>

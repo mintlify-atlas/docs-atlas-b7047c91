@@ -1,0 +1,71 @@
+---
+title: "get_model_info() — Retrieve Full Model Metadata"
+sidebarTitle: "get_model_info()"
+description: "get_model_info() returns the full metadata dictionary for a specific model, including family, parameter size, quantization, and format."
+---
+
+`get_model_info()` looks up a model by its full name and returns all stored metadata for that model from the bundled catalog. This is useful for confirming a model's quantization level before sending a request, checking its architecture family, or displaying model details in a UI. The lookup is performed in memory with no network call.
+
+## Signature
+
+```python
+client.get_model_info(model: str) -> Dict
+```
+
+## Parameters
+
+<ParamField path="model" type="string" required>
+  The full model name in `name:tag` format, exactly as it appears in the catalog (e.g. `"llama3.2:3b"`, `"mistral:latest"`). Use `list_models()` to enumerate valid names.
+</ParamField>
+
+## Returns
+
+<ResponseField name="model_name" type="string">
+  The model's identifier string as stored in the catalog (e.g. `"llama3.2:3b"`).
+</ResponseField>
+
+<ResponseField name="family" type="string">
+  The architecture family the model belongs to (e.g. `"llama"`, `"gemma"`, `"qwen2"`).
+</ResponseField>
+
+<ResponseField name="parameter_size" type="string">
+  Human-readable parameter count (e.g. `"3.2B"`, `"7B"`, `"70B"`).
+</ResponseField>
+
+<ResponseField name="quantization_level" type="string">
+  The quantization method applied to the model weights (e.g. `"Q4_K_M"`, `"Q8_0"`, `"F16"`).
+</ResponseField>
+
+<ResponseField name="format" type="string">
+  The on-disk model format (e.g. `"gguf"`).
+</ResponseField>
+
+<ResponseField name="size" type="string">
+  Model size in bytes as a string.
+</ResponseField>
+
+<ResponseField name="modified_at" type="string">
+  ISO 8601 timestamp indicating when the model entry was last modified (e.g. `"2024-11-01T12:00:00Z"`).
+</ResponseField>
+
+## Raises
+
+- **`ValueError`** — Raised if the provided model name does not match any entry in the catalog.
+
+## Examples
+
+<CodeGroup>
+```python Basic usage
+info = client.get_model_info("llama3.2:3b")
+print(info["parameter_size"])      # "3.2B"
+print(info["quantization_level"])  # "Q4_K_M"
+print(info["family"])              # "llama"
+```
+
+```python Error handling
+try:
+    info = client.get_model_info("nonexistent-model")
+except ValueError as e:
+    print(f"Model not found: {e}")
+```
+</CodeGroup>

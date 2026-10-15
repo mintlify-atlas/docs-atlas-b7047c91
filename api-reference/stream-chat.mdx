@@ -1,0 +1,89 @@
+---
+title: "stream_chat() — Stream Token-by-Token Responses"
+sidebarTitle: "stream_chat()"
+description: "OllamaFreeAPI.stream_chat() yields response chunks as they are generated, enabling real-time output for interactive applications."
+---
+
+`stream_chat()` works like `chat()` but instead of waiting for the full response before returning, it yields string chunks incrementally as the model produces them. This is ideal for chat interfaces, CLI tools, or any scenario where displaying output in real time improves user experience. The same server selection and failover logic used by `chat()` applies here.
+
+## Signature
+
+```python
+client.stream_chat(prompt: str, model: Optional[str] = None, **kwargs)  # Generator[str, None, None]
+```
+
+## Parameters
+
+<ParamField path="prompt" type="string" required>
+  The input text to send to the model.
+</ParamField>
+
+<ParamField path="model" type="string">
+  The model to use for generation (e.g. `"llama3.2:3b"`, `"mistral:latest"`). If `None`, a random model from the catalog is selected. Specifying a model explicitly is strongly recommended for consistent behavior in production.
+</ParamField>
+
+<ParamField path="temperature" type="float" default="0.7">
+  Controls the randomness of the model's output. Lower values produce more focused, deterministic responses; higher values produce more creative and varied outputs.
+</ParamField>
+
+<ParamField path="top_p" type="float" default="0.9">
+  Nucleus sampling threshold. The model considers only the smallest set of tokens whose cumulative probability exceeds this value.
+</ParamField>
+
+<ParamField path="num_predict" type="int" default="128">
+  Maximum number of tokens to generate. Increase this for longer streamed outputs.
+</ParamField>
+
+<ParamField path="stop" type="list" default="[]">
+  A list of strings at which generation will stop. Generation halts as soon as any sequence in the list is encountered.
+</ParamField>
+
+<ParamField path="repeat_penalty" type="float">
+  Penalizes tokens that have already appeared in the output. Values above `1.0` discourage repetition.
+</ParamField>
+
+<ParamField path="seed" type="int">
+  Random seed for reproducible outputs across runs on the same server.
+</ParamField>
+
+<ParamField path="timeout" type="float" default="30.0">
+  Maximum time in seconds to wait for the server to begin streaming. If the server does not respond within this window, failover is triggered.
+</ParamField>
+
+## Yields
+
+<ResponseField name="chunk" type="string">
+  A string token or partial token as produced by the model. Chunks should be printed or accumulated in the order they are yielded.
+</ResponseField>
+
+## Raises
+
+- **`RuntimeError`** — Raised if every available server for the requested model fails to return a response.
+
+## Examples
+
+<CodeGroup>
+```python Basic streaming
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+for chunk in client.stream_chat(
+    prompt="Tell me about the history of the internet.",
+    model="llama3.2:3b"
+):
+    print(chunk, end="", flush=True)
+```
+
+```python Collecting into a string
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+full_response = "".join(
+    client.stream_chat(prompt="What is Python?", model="llama3.2:3b")
+)
+```
+</CodeGroup>
+
+<Tip>
+  When printing chunks to a terminal, always pass `flush=True` to `print()`. Without it, Python's output buffering may hold chunks in memory and print them in bursts rather than character-by-character, defeating the purpose of streaming.
+</Tip>

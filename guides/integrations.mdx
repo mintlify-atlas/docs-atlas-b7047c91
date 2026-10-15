@@ -1,0 +1,110 @@
+---
+title: "Integrate OllamaFreeAPI with LangChain and LlamaIndex"
+sidebarTitle: "Integrations"
+description: "Connect OllamaFreeAPI to LangChain and LlamaIndex using get_llm_params(). Returns model name and base_url for drop-in compatibility with OllamaLLM."
+---
+
+`get_llm_params()` bridges OllamaFreeAPI's server discovery with popular LLM orchestration frameworks. It returns a dictionary containing `model` and `base_url` — the two fields that LangChain's `Ollama` integration and LlamaIndex's `Ollama` LLM class require to connect to a running Ollama server. This lets you use OllamaFreeAPI's community server network as the inference backend for chains, agents, and retrieval pipelines without hosting Ollama yourself.
+
+<Warning>
+  All prompts sent through these integrations travel over the internet to community-hosted servers. Do not include passwords, API keys, proprietary data, or any confidential information in your prompts or documents.
+</Warning>
+
+## How `get_llm_params()` Works
+
+When you call `get_llm_params(model="llama3.2:3b")`, OllamaFreeAPI queries its server catalog, ranks the servers hosting that model by `tokens_per_second` (descending), and returns the URL of the top-ranked server. The result looks like this:
+
+```python
+{"model": "llama3.2:3b", "base_url": "http://172.236.213.60:11434"}
+```
+
+Pass these values directly to your framework's Ollama class — no manual URL management required.
+
+<Note>
+  `get_llm_params()` performs server selection on every call. If you call it again before the next request, you will always get the freshest, fastest available server rather than a potentially stale cached URL.
+</Note>
+
+## LangChain Integration
+
+Install the required package if you have not already:
+
+```bash
+pip install langchain-community
+```
+
+Then connect OllamaFreeAPI to a LangChain `Ollama` LLM:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+from langchain_community.llms import Ollama
+
+api = OllamaFreeAPI()
+params = api.get_llm_params(model="llama3.2:3b")
+
+llm = Ollama(model=params["model"], base_url=params["base_url"])
+
+result = llm.invoke("Explain neural networks briefly.")
+print(result)
+```
+
+Because `params` is a plain dictionary, you can unpack it directly if you prefer:
+
+```python
+llm = Ollama(**api.get_llm_params(model="mistral:latest"))
+result = llm.invoke("What is retrieval-augmented generation?")
+print(result)
+```
+
+You can use this `llm` object anywhere LangChain accepts an LLM — chains, agents, `ConversationalRetrievalChain`, and so on.
+
+## LlamaIndex Integration
+
+Install the LlamaIndex Ollama integration:
+
+```bash
+pip install llama-index-llms-ollama
+```
+
+Then wire up OllamaFreeAPI as the inference backend:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+from llama_index.llms.ollama import Ollama
+
+api = OllamaFreeAPI()
+params = api.get_llm_params(model="deepseek-r1:latest")
+
+llm = Ollama(model=params["model"], base_url=params["base_url"])
+
+response = llm.complete("Summarise the concept of attention in transformers.")
+print(response.text)
+```
+
+You can pass this `llm` to any LlamaIndex component that accepts an LLM, including `ServiceContext`, `Settings`, and query engines:
+
+```python
+from llama_index.core import Settings
+
+Settings.llm = Ollama(**api.get_llm_params(model="llama3.2:3b"))
+# All subsequent LlamaIndex operations use this LLM automatically
+```
+
+## Refreshing the Server
+
+Community server performance fluctuates. Because `get_llm_params()` runs a fresh server selection on every invocation, you can re-instantiate the LLM object at the start of each session (or periodically in a long-running service) to ensure you are always pointed at the best currently available server:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+from langchain_community.llms import Ollama
+
+def get_fresh_llm(model: str) -> Ollama:
+    """Return an Ollama LLM pointed at the fastest current server."""
+    api = OllamaFreeAPI()
+    params = api.get_llm_params(model=model)
+    return Ollama(model=params["model"], base_url=params["base_url"])
+
+llm = get_fresh_llm("llama3.2:3b")
+print(llm.invoke("What is gradient descent?"))
+```
+
+There is no persistent connection to manage — each `Ollama` instance in LangChain and LlamaIndex opens individual HTTP requests, so swapping `base_url` between calls is safe.

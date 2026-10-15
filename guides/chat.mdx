@@ -1,0 +1,124 @@
+---
+title: "Send Chat Requests with OllamaFreeAPI"
+sidebarTitle: "Chat"
+description: "Use OllamaFreeAPI's chat() method to send prompts and receive full text responses from LLaMA, Mistral, DeepSeek, and other open-source models."
+---
+
+The `chat()` method sends a prompt to a community-hosted Ollama server and returns the complete model response as a single Python string. It blocks until the full response is ready, making it the right choice for scripts, batch pipelines, or any situation where you need the entire answer before proceeding. If you need tokens to appear on screen as they are generated, use [`stream_chat()`](/guides/streaming) instead.
+
+<Warning>
+  OllamaFreeAPI routes requests through community-hosted servers. Never include passwords, API keys, personal information, or any confidential data in your prompts.
+</Warning>
+
+## Basic Usage
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+response = client.chat(prompt="What is the capital of France?", model="llama3.2:3b")
+print(response)
+```
+
+The method returns a plain `str` containing the model's reply. No post-processing is needed.
+
+## Choosing a Model
+
+Pass the `model` parameter to target a specific model. You can discover all currently available models by calling `list_models()`:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+# List every available model
+all_models = client.list_models()
+print(all_models)
+# e.g. ['llama3.2:3b', 'llama3.2:latest', 'mistral:latest', 'deepseek-r1:latest', ...]
+
+# Filter by family
+llama_models = client.list_models(family="llama")
+print(llama_models)
+```
+
+If `model=None` (the default), OllamaFreeAPI selects a random available model. This is convenient for quick experiments but **not recommended for production** — model availability changes as community servers come online and go offline, so the random selection may produce inconsistent results across calls.
+
+## Generation Parameters
+
+Fine-tune the model's output behaviour by passing keyword arguments alongside your prompt.
+
+<ParamField body="temperature" type="float" default="0.7">
+  Controls the randomness of the output. Lower values (e.g. `0.2`) make responses more focused and deterministic; higher values (e.g. `1.2`) make them more creative and varied.
+</ParamField>
+
+<ParamField body="top_p" type="float" default="0.9">
+  Nucleus sampling threshold. The model considers only the smallest set of tokens whose cumulative probability exceeds this value. Lower values restrict diversity; `1.0` disables nucleus sampling.
+</ParamField>
+
+<ParamField body="num_predict" type="int" default="128">
+  Maximum number of tokens to generate. Increase this for longer answers; reduce it to cap costs or latency.
+</ParamField>
+
+<ParamField body="stop" type="List[str]" default="[]">
+  One or more strings that, when generated, cause the model to stop immediately. Useful for keeping responses within a defined format, e.g. `stop=["###", "\n\n"]`.
+</ParamField>
+
+<ParamField body="repeat_penalty" type="float">
+  Penalises the model for repeating tokens that have already appeared. Values above `1.0` reduce repetition; the default Ollama value is `1.1`.
+</ParamField>
+
+<ParamField body="seed" type="int">
+  Fixed random seed for reproducible outputs. Given the same prompt and seed, the model should produce identical output on the same server.
+</ParamField>
+
+<ParamField body="tfs_z" type="float">
+  Tail-free sampling parameter. Reduces the impact of low-probability tokens. A value of `1.0` disables tail-free sampling.
+</ParamField>
+
+<ParamField body="mirostat" type="int">
+  Enable Mirostat sampling to control perplexity. `0` = disabled, `1` = Mirostat v1, `2` = Mirostat v2.
+</ParamField>
+
+<ParamField body="timeout" type="float" default="30.0">
+  Per-request timeout in seconds. If the server does not respond within this window, OllamaFreeAPI tries the next available server automatically.
+</ParamField>
+
+## Custom Parameters Example
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+response = client.chat(
+    prompt="Write a short poem about the ocean.",
+    model="mistral:latest",
+    temperature=0.8,
+    num_predict=256,
+    repeat_penalty=1.15,
+    stop=["---"],
+)
+print(response)
+```
+
+## Error Handling
+
+If every available server for the requested model fails (network errors, timeouts, or server-side errors), `chat()` raises a `RuntimeError`. Wrap calls in a `try/except` block to handle this gracefully:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+try:
+    response = client.chat(
+        prompt="Summarise the theory of relativity.",
+        model="llama3.2:3b",
+    )
+    print(response)
+except RuntimeError as e:
+    print(f"All servers failed: {e}")
+    # Retry later or fall back to a different model
+```
+
+The client automatically tries servers in descending order of tokens-per-second performance before raising, so a single server being offline is handled transparently.

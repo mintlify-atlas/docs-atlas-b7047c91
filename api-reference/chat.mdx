@@ -1,0 +1,80 @@
+---
+title: "chat() — Send a Prompt and Get a Text Response"
+sidebarTitle: "chat()"
+description: "OllamaFreeAPI.chat() sends a prompt to a community-hosted Ollama server and returns the full response as a string."
+---
+
+`chat()` is the primary method for single-turn interactions. It selects the fastest available server for the requested model, sends the prompt, waits for the complete response, and returns it as a plain string. Failover to the next-best server is handled automatically if the first attempt fails.
+
+## Signature
+
+```python
+client.chat(prompt: str, model: Optional[str] = None, **kwargs) -> str
+```
+
+## Parameters
+
+<ParamField path="prompt" type="string" required>
+  The input text to send to the model.
+</ParamField>
+
+<ParamField path="model" type="string">
+  The model to use for generation (e.g. `"llama3.2:3b"`, `"mistral:latest"`). If `None`, a random model from the catalog is selected. Specifying a model explicitly is strongly recommended for consistent behavior in production.
+</ParamField>
+
+<ParamField path="temperature" type="float" default="0.7">
+  Controls the randomness of the model's output. Lower values (e.g. `0.2`) produce more focused, deterministic responses; higher values (e.g. `1.2`) produce more creative and varied outputs.
+</ParamField>
+
+<ParamField path="top_p" type="float" default="0.9">
+  Nucleus sampling threshold. The model considers only the smallest set of tokens whose cumulative probability exceeds this value. Lower values narrow the token pool.
+</ParamField>
+
+<ParamField path="num_predict" type="int" default="128">
+  Maximum number of tokens to generate in the response. Increase this for longer outputs.
+</ParamField>
+
+<ParamField path="stop" type="list" default="[]">
+  A list of strings at which generation will stop. For example, `stop=["</s>", "User:"]` halts output when either sequence is encountered.
+</ParamField>
+
+<ParamField path="repeat_penalty" type="float">
+  Penalizes tokens that have already appeared in the output. Values above `1.0` discourage repetition; `1.0` applies no penalty.
+</ParamField>
+
+<ParamField path="seed" type="int">
+  Random seed for reproducible outputs. When set, the same prompt and seed will produce identical results on the same server.
+</ParamField>
+
+<ParamField path="timeout" type="float" default="30.0">
+  Maximum time in seconds to wait for a response from the server. If the server does not respond within this window, the request times out and failover is triggered.
+</ParamField>
+
+## Returns
+
+<ResponseField name="response" type="string">
+  The model's generated text, returned as a single string after generation is complete.
+</ResponseField>
+
+## Raises
+
+- **`RuntimeError`** — Raised if every available server for the requested model fails to return a response.
+
+## Example
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+response = client.chat(
+    prompt="Explain neural networks in one paragraph.",
+    model="llama3.2:3b",
+    temperature=0.7,
+    num_predict=256
+)
+print(response)
+```
+
+<Note>
+  The fastest server (by `tokens_per_second`) is always tried first. If it is unavailable or returns an error, the client automatically retries with the next-best server — no configuration required. To inspect which servers are available and their performance scores, use [`get_model_servers()`](/api-reference/get-model-servers).
+</Note>

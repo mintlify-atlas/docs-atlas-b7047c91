@@ -1,0 +1,70 @@
+---
+title: "get_model_servers() — List Servers Hosting a Model"
+sidebarTitle: "get_model_servers()"
+description: "get_model_servers() returns all community nodes hosting a specific model, with location, organization, and performance metrics for each server."
+---
+
+`get_model_servers()` returns the full list of community-hosted servers that have the requested model available. Each entry in the returned list describes a single server node, including its URL, geographic location, hosting organization, and the most recent performance benchmark. This method is useful for auditing available capacity, building custom routing logic, or displaying server health in a dashboard.
+
+## Signature
+
+```python
+client.get_model_servers(model: str) -> List[Dict]
+```
+
+## Parameters
+
+<ParamField path="model" type="string" required>
+  The full model name in `name:tag` format (e.g. `"llama3.2:3b"`, `"mistral:latest"`). Use `list_models()` to enumerate valid names.
+</ParamField>
+
+## Returns
+
+A list of server dictionaries. Each dictionary has the following structure:
+
+<ResponseField name="url" type="string">
+  The full base URL of the server, including protocol and port (e.g. `"http://172.236.213.60:11434"`).
+</ResponseField>
+
+<ResponseField name="location" type="object">
+  Geographic location of the server node.
+  <Expandable title="location fields">
+    <ResponseField name="city" type="string">
+      City where the server is hosted (e.g. `"Frankfurt am Main"`).
+    </ResponseField>
+    <ResponseField name="country" type="string">
+      Country where the server is hosted (e.g. `"Germany"`).
+    </ResponseField>
+    <ResponseField name="continent" type="string">
+      Continent where the server is hosted (e.g. `"Europe"`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="organization" type="string">
+  Name of the organization or cloud provider hosting the server (e.g. `"Akamai Technologies, Inc."`).
+</ResponseField>
+
+<ResponseField name="performance" type="object">
+  Most recent performance benchmark for the server.
+  <Expandable title="performance fields">
+    <ResponseField name="tokens_per_second" type="number">
+      Measured throughput in tokens per second at the time of the last benchmark.
+    </ResponseField>
+    <ResponseField name="last_tested" type="string">
+      ISO 8601 timestamp of when the benchmark was last recorded (e.g. `"2024-11-01T08:30:00Z"`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+```python
+servers = client.get_model_servers("llama3.2:3b")
+for s in servers:
+    print(s["url"], s["performance"]["tokens_per_second"])
+```
+
+<Note>
+  `get_model_servers()` returns servers in catalog order — it does **not** sort by performance. The performance-weighted sort (fastest server first) is applied internally by `chat()` and `stream_chat()` at request time. If you need a sorted list for display purposes, sort the returned list yourself by `performance["tokens_per_second"]` in descending order.
+</Note>

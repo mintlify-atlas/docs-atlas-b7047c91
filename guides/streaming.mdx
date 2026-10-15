@@ -1,0 +1,132 @@
+---
+title: "Stream LLM Responses in Real Time"
+sidebarTitle: "Streaming"
+description: "Use stream_chat() to receive tokens as they are generated, enabling real-time output for chatbots, CLI tools, and interactive applications."
+---
+
+`stream_chat()` is a generator that yields string chunks as the model produces them, rather than waiting for the entire response before returning. It uses the same server selection and automatic failover logic as `chat()` — servers are ranked by tokens-per-second and tried in order — so you benefit from the fastest available server without any extra configuration.
+
+<Tip>
+  Always pass `flush=True` to `print()` when streaming to the terminal. Without it, Python's output buffer may hold chunks back and they will appear all at once at the end, defeating the purpose of streaming.
+</Tip>
+
+## Basic Streaming
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+for chunk in client.stream_chat(
+    prompt="Explain the water cycle step by step.",
+    model="llama3.2:3b",
+):
+    print(chunk, end="", flush=True)
+
+print()  # newline after the response finishes
+```
+
+Each `chunk` is a plain `str` containing one or more tokens. The generator exhausts naturally when the model finishes generating.
+
+## Collecting the Full Response
+
+If you need streaming delivery during generation but also want the complete string afterwards, collect chunks with `join`:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+response = "".join(
+    client.stream_chat(
+        prompt="List three benefits of regular exercise.",
+        model="mistral:latest",
+    )
+)
+
+print(response)
+```
+
+## Parameters
+
+`stream_chat()` accepts exactly the same keyword arguments as `chat()`. The `timeout` value applies to the **entire streaming session**, not just the first token.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `temperature` | `float` | `0.7` | Output randomness. Lower = more focused. |
+| `top_p` | `float` | `0.9` | Nucleus sampling threshold. |
+| `num_predict` | `int` | `128` | Maximum tokens to generate. |
+| `stop` | `List[str]` | `[]` | Stop sequences that end generation early. |
+| `repeat_penalty` | `float` | — | Penalise repeated tokens. |
+| `seed` | `int` | — | Fixed seed for reproducible output. |
+| `tfs_z` | `float` | — | Tail-free sampling parameter. |
+| `mirostat` | `int` | — | Mirostat sampling mode (`0`, `1`, or `2`). |
+| `timeout` | `float` | `30.0` | Timeout in seconds for the whole stream. |
+
+## Streaming vs Non-Streaming
+
+<CardGroup cols={2}>
+  <Card title="Use stream_chat() when…" icon="bolt">
+    - Building interactive chatbots or CLI tools where users see tokens arrive in real time
+    - Generating long responses where waiting for the full output feels slow
+    - Rendering output progressively in a web UI (e.g. via Server-Sent Events)
+    - You want to begin processing early tokens before generation finishes
+  </Card>
+  <Card title="Use chat() when…" icon="circle-check">
+    - Running batch jobs or scripts that process the full response as a unit
+    - The response is short and latency is negligible
+    - Downstream code requires the complete string before it can proceed
+    - You are testing or prototyping and simplicity matters more than UX
+  </Card>
+</CardGroup>
+
+## Error Handling
+
+If all servers for the requested model fail, `stream_chat()` raises a `RuntimeError`. Because the generator is lazy, the error is raised when the **first chunk is requested**, not when `stream_chat()` is called.
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+try:
+    for chunk in client.stream_chat(
+        prompt="Tell me about quantum entanglement.",
+        model="deepseek-r1:latest",
+    ):
+        print(chunk, end="", flush=True)
+    print()
+except RuntimeError as e:
+    print(f"\nStreaming failed: {e}")
+    # All servers were unreachable — retry later or switch models
+```
+
+## Complete Example
+
+The following script streams a response to the terminal with live output and a clean newline at the end:
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+def stream_to_terminal(prompt: str, model: str) -> None:
+    client = OllamaFreeAPI()
+    print(f"Model: {model}\nPrompt: {prompt}\n\n--- Response ---")
+    try:
+        for chunk in client.stream_chat(
+            prompt=prompt,
+            model=model,
+            temperature=0.7,
+            num_predict=300,
+        ):
+            print(chunk, end="", flush=True)
+    except RuntimeError as e:
+        print(f"\nError: {e}")
+    finally:
+        print("\n--- End ---")
+
+if __name__ == "__main__":
+    stream_to_terminal(
+        prompt="Explain black holes in simple terms.",
+        model="llama3.2:3b",
+    )
+```

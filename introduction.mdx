@@ -1,0 +1,71 @@
+---
+title: "OllamaFreeAPI: Free Distributed LLM Access for Python"
+sidebarTitle: "Introduction"
+description: "OllamaFreeAPI is a Python SDK that provides free, zero-config access to LLaMA, Mistral, DeepSeek, Qwen, and Gemma models via community-hosted Ollama servers."
+---
+
+OllamaFreeAPI is a Python SDK that gives every developer free, instant access to the world's leading open-source large language models — no API key, no credit card, no quota. It routes your requests through a network of community-hosted Ollama servers, automatically selecting the fastest available node and failing over to a backup if anything goes wrong. Whether you are prototyping a chatbot, running experiments, or building a production application on a tight budget, OllamaFreeAPI removes every barrier between you and state-of-the-art language models.
+
+## How It Works
+
+OllamaFreeAPI is backed by a distributed fleet of community-hosted Ollama servers spread across multiple geographic regions. When you call `chat()` or `stream_chat()`, the library performs three steps transparently:
+
+1. **Server discovery** — A curated catalog of verified server nodes is bundled with the package. Each entry records the server's IP/port, geographic location, and a recent performance measurement (tokens per second).
+2. **Performance-weighted selection** — Servers are ranked by measured throughput in descending order. The highest-performing available server handles your request first, so you consistently get the fastest possible response.
+3. **Automatic failover** — If the top-ranked server is unreachable or returns an error, the library moves to the next server in the sorted list without any action required from your code. All of this happens inside a single `chat()` call.
+
+<Note>
+  You do not need to install or run an Ollama server yourself. OllamaFreeAPI connects to the community-hosted infrastructure automatically — there is nothing to configure.
+</Note>
+
+## OllamaFreeAPI vs Alternatives
+
+| Feature | Other Free Tiers | OllamaFreeAPI |
+|---|---|---|
+| Free access | ❌ Limited trials | ✅ Always free |
+| Model variety | 3–5 models | 16 active models across 5 families |
+| Reliability | Highly variable | Validated endpoints, automatic failover |
+| Ease of use | Complex setup, API keys required | Zero-config, `pip install` and go |
+| Community support | Paid plans only | Free and active |
+
+## Model Families
+
+OllamaFreeAPI ships with a curated catalog covering five model families, sourced from verified community nodes:
+
+| Family | Status | Notes |
+|---|---|---|
+| `llama` | ✅ Active | Meta's LLaMA family, including the efficient `llama3.2:3b` |
+| `gemma` | ✅ Active | Google's Gemma family, including the powerful `gpt-oss:20b` |
+| `qwen` | ✅ Active | Alibaba Cloud's Qwen family |
+| `mistral` | Available | High-performance Mistral baseline and Mistral-Nemo variants |
+| `deepseek` | Available | DeepSeek-R1 with strong reasoning capabilities |
+
+**Current catalog stats:** 16 active models · 3 active families · 6+ highly reliable server nodes
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Zero Config" icon="key">
+    No API keys, no environment variables, no sign-up. Import the package, instantiate `OllamaFreeAPI()`, and start generating. The entire server catalog is bundled inside the package.
+  </Card>
+  <Card title="Auto Load Balancing" icon="shuffle">
+    Every request is routed to the highest-throughput server available. If that server fails, the library automatically retries the next-best option — your code never sees the difference.
+  </Card>
+  <Card title="Streaming Support" icon="wave-sine">
+    `stream_chat()` yields response chunks as they are generated, enabling real-time output in terminals, chat UIs, and streaming API endpoints with no additional setup.
+  </Card>
+  <Card title="Framework Integrations" icon="link">
+    `get_llm_params()` returns a `model` and `base_url` dict ready to drop straight into LangChain's `OllamaLLM` or LlamaIndex's `Ollama` connector, making it trivial to swap in free community servers.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Install the package and send your first request in under 2 minutes.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore every method, parameter, and return type in the full API reference.
+  </Card>
+</CardGroup>

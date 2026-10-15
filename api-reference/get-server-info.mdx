@@ -1,0 +1,84 @@
+---
+title: "get_server_info() — Inspect a Specific Hosting Node"
+sidebarTitle: "get_server_info()"
+description: "get_server_info() returns metadata for one server hosting a model—location, organization, and performance data. Returns the top-ranked server if no URL is specified."
+---
+
+`get_server_info()` retrieves the metadata record for a single server that hosts a given model. When called without a `server_url`, it returns the first available server for the model (equivalent to index `0` of the list returned by `get_model_servers()`). When a `server_url` is provided, it looks up and returns the record for that specific node. This is useful for verifying connectivity details, checking the geographic location of a server, or reviewing performance data for a specific host before routing traffic to it.
+
+## Signature
+
+```python
+client.get_server_info(model: str, server_url: Optional[str] = None) -> Dict
+```
+
+## Parameters
+
+<ParamField path="model" type="string" required>
+  The full model name in `name:tag` format (e.g. `"mistral:latest"`, `"llama3.2:3b"`). Use `list_models()` to enumerate valid names.
+</ParamField>
+
+<ParamField path="server_url" type="string">
+  The base URL of the server to look up (e.g. `"http://172.236.213.60:11434"`). If `None`, the first available server for the model is returned. Use `get_model_servers()` to retrieve all valid URLs for a model.
+</ParamField>
+
+## Returns
+
+A single server dictionary with the following fields:
+
+<ResponseField name="url" type="string">
+  The full base URL of the server, including protocol and port (e.g. `"http://172.236.213.60:11434"`).
+</ResponseField>
+
+<ResponseField name="location" type="object">
+  Geographic location of the server node.
+  <Expandable title="location fields">
+    <ResponseField name="city" type="string">
+      City where the server is hosted (e.g. `"Frankfurt am Main"`).
+    </ResponseField>
+    <ResponseField name="country" type="string">
+      Country where the server is hosted (e.g. `"Germany"`).
+    </ResponseField>
+    <ResponseField name="continent" type="string">
+      Continent where the server is hosted (e.g. `"Europe"`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="organization" type="string">
+  Name of the organization or cloud provider hosting the server (e.g. `"Akamai Technologies, Inc."`).
+</ResponseField>
+
+<ResponseField name="performance" type="object">
+  Most recent performance benchmark for the server.
+  <Expandable title="performance fields">
+    <ResponseField name="tokens_per_second" type="number">
+      Measured throughput in tokens per second at the time of the last benchmark.
+    </ResponseField>
+    <ResponseField name="last_tested" type="string">
+      ISO 8601 timestamp of when the benchmark was last recorded (e.g. `"2024-11-01T08:30:00Z"`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Raises
+
+- **`ValueError`** — Raised if the model name is not found in the catalog, or if a `server_url` is provided but does not match any server hosting the specified model.
+
+## Examples
+
+<CodeGroup>
+```python First server (no URL specified)
+server = client.get_server_info("mistral:latest")
+print(server["location"]["city"])   # e.g. "Frankfurt am Main"
+print(server["organization"])       # e.g. "Akamai Technologies, Inc."
+```
+
+```python Specific server by URL
+server = client.get_server_info(
+    "mistral:latest",
+    server_url="http://172.236.213.60:11434"
+)
+print(server["performance"]["tokens_per_second"])
+```
+</CodeGroup>

@@ -1,20 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "OllamaFreeAPI: Free Access to Open-Source LLMs"
+sidebarTitle: "Home"
+description: "OllamaFreeAPI gives you instant, free access to LLaMA, Mistral, DeepSeek, Qwen, and Gemma models—no API keys, no sign-up, no cost."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+OllamaFreeAPI is a Python SDK that connects you to community-hosted Ollama servers running the world's best open-source language models. Install the package and start generating responses in under a minute—no accounts, no credit cards, no configuration required.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get a working response in under 2 minutes with a single pip install
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Python version requirements, pip install, and upgrade instructions
+  </Card>
+  <Card title="Chat Guide" icon="message" href="/guides/chat">
+    Learn how to send prompts and configure generation parameters
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Full reference for every method on the OllamaFreeAPI client
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## Why OllamaFreeAPI?
+
+OllamaFreeAPI removes every barrier between you and powerful open-source AI. The library automatically discovers the fastest available server for each model, retries on failure, and streams tokens to your terminal—all with a single Python import.
+
+<CardGroup cols={3}>
+  <Card title="No API Keys" icon="key">
+    Zero authentication required. Requests work out of the box with no sign-up or billing setup.
+  </Card>
+  <Card title="Auto Load Balancing" icon="shuffle">
+    Servers are ranked by measured token throughput. The fastest node is always selected first.
+  </Card>
+  <Card title="16+ Active Models" icon="brain">
+    LLaMA 3.2, Mistral, DeepSeek-R1, Qwen, Gemma, and more—all verified and tested.
+  </Card>
+</CardGroup>
+
+## Quick example
+
+```python quickstart.py
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+# Stream a response token by token
+for chunk in client.stream_chat("What is quantum computing?", model="llama3.2:3b"):
+    print(chunk, end="", flush=True)
+```
+
+## Explore the docs
+
+<CardGroup cols={2}>
+  <Card title="Streaming Responses" icon="wave-sine" href="/guides/streaming">
+    Stream tokens in real time for interactive applications
+  </Card>
+  <Card title="Browse Models" icon="list" href="/guides/models">
+    Explore available model families and their capabilities
+  </Card>
+  <Card title="LangChain Integration" icon="link" href="/guides/integrations">
+    Use OllamaFreeAPI as a backend for LangChain and LlamaIndex
+  </Card>
+  <Card title="Android / Termux" icon="mobile" href="/guides/termux">
+    Run OllamaFreeAPI on a Samsung Galaxy with Termux
+  </Card>
+</CardGroup>

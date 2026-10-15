@@ -1,0 +1,155 @@
+---
+title: "Browse Available Models and Families"
+sidebarTitle: "Models"
+description: "Discover all active models in OllamaFreeAPI across the LLaMA, Gemma, and Qwen families. Learn how to list, inspect, and select models programmatically."
+---
+
+OllamaFreeAPI provides access to a community-sourced catalog of open-source models spanning three architecture families — **llama**, **gemma**, and **qwen** — with more than 10 active model entries regularly validated against live servers. Each model is served by one or more community-hosted Ollama instances; the client automatically routes requests to the fastest available server at call time.
+
+<Note>
+  Model availability depends entirely on community servers. A model appearing in the catalog does not guarantee its server is currently online. Always call `list_models()` at runtime to get the live catalog, and handle `RuntimeError` in case a model's servers are temporarily unreachable.
+</Note>
+
+## Model Families
+
+OllamaFreeAPI groups models into families based on their underlying architecture.
+
+<CardGroup cols={3}>
+  <Card title="llama" icon="fire">
+    LLaMA-architecture models — the broadest family, covering LLaMA 3, Mistral, BakLLaVA, and SmolLM2.
+
+    **Active models:**
+    - `llama3.2:3b`
+    - `llama3.2:latest`
+    - `llama3:latest`
+    - `mistral:latest`
+    - `mistral-nemo:custom`
+    - `bakllava:latest`
+    - `smollm2:135m`
+  </Card>
+  <Card title="gemma" icon="gem">
+    Gemma-architecture models from Google DeepMind, served under the `gpt-oss` tag.
+
+    **Active models:**
+    - `gpt-oss:20b`
+  </Card>
+  <Card title="qwen" icon="brain">
+    Qwen-architecture models from Alibaba, including the DeepSeek-R1 reasoning model built on Qwen2.
+
+    **Active models:**
+    - `deepseek-r1:latest`
+  </Card>
+</CardGroup>
+
+## Listing Models
+
+Use `list_families()` to see which architecture families are active, and `list_models()` to enumerate individual model names — optionally filtered to a single family.
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+# List all available families
+families = client.list_families()
+print(families)
+# e.g. ['gemma', 'llama', 'qwen']
+
+# List every model across all families
+all_models = client.list_models()
+print(all_models)
+# e.g. ['llama3.2:3b', 'llama3.2:latest', 'llama3:latest', 'mistral:latest',
+#        'mistral-nemo:custom', 'deepseek-r1:latest', 'gpt-oss:20b',
+#        'bakllava:latest', 'smollm2:135m', ...]
+
+# List only models in the llama family
+llama_models = client.list_models(family="llama")
+print(llama_models)
+
+# List only models in the qwen family
+qwen_models = client.list_models(family="qwen")
+print(qwen_models)
+```
+
+## Getting Model Details
+
+`get_model_info()` returns a dictionary describing a specific model's metadata. Pass the exact model name string as returned by `list_models()`.
+
+```python
+from ollamafreeapi import OllamaFreeAPI
+
+client = OllamaFreeAPI()
+
+info = client.get_model_info("llama3.2:3b")
+print(info)
+```
+
+The returned dictionary includes the following fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `model_name` | `str` | The full model identifier, e.g. `"llama3.2:3b"` |
+| `family` | `str` | Architecture family: `"llama"`, `"gemma"`, or `"qwen"` |
+| `parameter_size` | `str` | Human-readable parameter count, e.g. `"3.21B"` |
+| `quantization_level` | `str` | Quantization scheme applied, e.g. `"Q4_K_M"` |
+| `format` | `str` | Model file format, typically `"gguf"` |
+| `size` | `int` | Model file size in bytes |
+
+If the model name is not found in the catalog, `get_model_info()` raises a `ValueError`.
+
+```python
+try:
+    info = client.get_model_info("nonexistent:model")
+except ValueError as e:
+    print(f"Model not found: {e}")
+```
+
+## Model Selection Tips
+
+<AccordionGroup>
+  <Accordion title="General-purpose tasks — llama3.2:3b">
+    A strong default for most workloads. At 3.21B parameters with Q4_K_M quantization, it balances speed and quality well. Community servers running this model typically achieve the highest tokens-per-second rates in the catalog.
+
+    ```python
+    response = client.chat(prompt="Summarise this paragraph.", model="llama3.2:3b")
+    ```
+  </Accordion>
+  <Accordion title="Reasoning and chain-of-thought — deepseek-r1:latest">
+    Built on the Qwen2 architecture, DeepSeek-R1 is tuned for multi-step reasoning, maths, and logic tasks. At 7.6B parameters (Q4_K_M), it is heavier than `llama3.2:3b` but significantly more capable on analytical prompts.
+
+    ```python
+    response = client.chat(
+        prompt="Solve: if 2x + 5 = 17, what is x? Show your working.",
+        model="deepseek-r1:latest",
+        num_predict=256,
+    )
+    ```
+  </Accordion>
+  <Accordion title="Larger context and quality — gpt-oss:20b">
+    `gpt-oss:20b` is a Gemma-3 based model (4.3B active parameters) offering strong instruction-following and longer coherent outputs. Choose it when response quality matters more than raw speed.
+
+    ```python
+    response = client.chat(
+        prompt="Write a detailed essay on climate change.",
+        model="gpt-oss:20b",
+        num_predict=512,
+    )
+    ```
+  </Accordion>
+  <Accordion title="Ultra-light testing — smollm2:135m">
+    At just 134.52M parameters, `smollm2:135m` is the smallest model in the catalog. It is not suited for complex tasks but is ideal for quickly verifying connectivity, testing integration code, or CI pipelines where only a response (not quality) is needed.
+
+    ```python
+    response = client.chat(prompt="Say hello.", model="smollm2:135m")
+    ```
+  </Accordion>
+  <Accordion title="Vision and multimodal — bakllava:latest">
+    `bakllava:latest` is a 7B multimodal model capable of processing image inputs alongside text. Use it when your application requires visual understanding. Check server availability with `get_model_servers()` before relying on it in production.
+
+    ```python
+    info = client.get_model_info("bakllava:latest")
+    servers = client.get_model_servers("bakllava:latest")
+    print(f"Servers available: {len(servers)}")
+    ```
+  </Accordion>
+</AccordionGroup>

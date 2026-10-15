@@ -1,0 +1,73 @@
+---
+title: "list_models() and list_families() — Discover Available Models"
+sidebarTitle: "list_models()"
+description: "list_models() returns all available model names, optionally filtered by family. list_families() returns the available family names."
+---
+
+These two methods provide discovery over the bundled model catalog. Use `list_families()` to see which architectural families are represented, then use `list_models()` to enumerate every model name — either across the full catalog or scoped to a single family. Both methods operate entirely from in-memory data loaded at initialization and make no network calls.
+
+---
+
+## list_families()
+
+Returns the names of all model families present in the bundled catalog. Family names correspond to the JSON filenames used to organize the model data (e.g. `llama`, `mistral`, `gemma`).
+
+### Signature
+
+```python
+client.list_families() -> List[str]
+```
+
+### Returns
+
+<ResponseField name="families" type="List[str]">
+  A list of family name strings in lowercase (e.g. `["gemma", "llama", "qwen"]`).
+</ResponseField>
+
+### Example
+
+```python
+families = client.list_families()
+# ["gemma", "llama", "qwen"]
+```
+
+---
+
+## list_models()
+
+Returns all model names available in the catalog. When the optional `family` argument is provided, only models belonging to that family are returned.
+
+### Signature
+
+```python
+client.list_models(family: Optional[str] = None) -> List[str]
+```
+
+### Parameters
+
+<ParamField path="family" type="string">
+  Filter results to a specific model family. The lookup is case-insensitive, so `"Llama"`, `"llama"`, and `"LLAMA"` are all equivalent. If `None`, models from all families are returned. Use `list_families()` to see valid family names.
+</ParamField>
+
+### Returns
+
+<ResponseField name="models" type="List[str]">
+  A list of model name strings in `name:tag` format (e.g. `["llama3.2:3b", "llama3.2:latest", "llama3:latest"]`). Returns an empty list if the specified family does not exist in the catalog.
+</ResponseField>
+
+### Examples
+
+<CodeGroup>
+```python All models
+all_models = client.list_models()
+```
+
+```python Filtered by family
+llama_models = client.list_models(family="llama")
+# ["llama3.2:3b", "llama3.2:latest", "llama3:latest", ...]
+```
+</CodeGroup>
+
+<Note>
+  The model catalog is bundled with the package and does not update automatically. To access newly added models or servers, upgrade to the latest version of the package.
+</Note>

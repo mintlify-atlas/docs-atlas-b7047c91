@@ -1,0 +1,77 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "OllamaFreeAPI",
+  "projectDescription": "A Python SDK providing zero-configuration, free access to 50+ open-source LLMs (LLaMA, Mistral, DeepSeek, Qwen, Gemma) through distributed community-hosted Ollama servers with automatic load balancing.",
+  "theme": "luma",
+  "primaryColor": "#6366F1",
+  "lightColor": "#818CF8",
+  "darkColor": "#4338CA",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/chat",
+              "guides/streaming",
+              "guides/models",
+              "guides/integrations",
+              "guides/termux"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Client",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/chat",
+              "api-reference/stream-chat",
+              "api-reference/list-models",
+              "api-reference/get-model-info",
+              "api-reference/get-model-servers",
+              "api-reference/get-server-info",
+              "api-reference/generate-api-request",
+              "api-reference/get-llm-params"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Zero-configuration access — no API keys or sign-up required",
+    "Free forever with access to 16+ verified active models",
+    "Performance-weighted automatic server selection across global nodes",
+    "Streaming and non-streaming chat interfaces",
+    "LangChain and LlamaIndex integration via get_llm_params()",
+    "Support for LLaMA, Mistral, DeepSeek, Qwen, and Gemma model families",
+    "Built on ollama-python for compatibility with the Ollama ecosystem",
+    "Android/Termux support with Hermes agent skill integration"
+  ],
+  "publicApiSurface": [
+    "OllamaFreeAPI() — constructor",
+    "chat(prompt, model, **kwargs) -> str",
+    "stream_chat(prompt, model, **kwargs) -> Generator",
+    "list_models(family=None) -> List[str]",
+    "list_families() -> List[str]",
+    "get_model_info(model) -> Dict",
+    "get_model_servers(model) -> List[Dict]",
+    "get_server_info(model, server_url=None) -> Dict",
+    "generate_api_request(model, prompt, **kwargs) -> Dict",
+    "get_llm_params(model=None) -> Dict"
+  ]
+}
